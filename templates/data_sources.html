@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Источники данных</h2>
+    
+    <ul class="nav nav-tabs" id="dataSources" role="tablist">
+        <li class="nav-item" role="presentation">
+            <a class="nav-link active" id="csv-tab" data-bs-toggle="tab" href="#csv" role="tab" aria-controls="csv" aria-selected="true">CSV</a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" id="postgresql-tab" data-bs-toggle="tab" href="#postgresql" role="tab" aria-controls="postgresql" aria-selected="false">PostgreSQL</a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" id="mysql-tab" data-bs-toggle="tab" href="#mysql" role="tab" aria-controls="mysql" aria-selected="false">MySQL</a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" id="mongodb-tab" data-bs-toggle="tab" href="#mongodb" role="tab" aria-controls="mongodb" aria-selected="false">MongoDB</a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" id="cassandra-tab" data-bs-toggle="tab" href="#cassandra" role="tab" aria-controls="cassandra" aria-selected="false">Cassandra</a>
+        </li>
+    </ul>
+    
+    <div class="tab-content mt-3" id="dataSourcesContent">
+        <div class="tab-pane fade show active" id="csv" role="tabpanel" aria-labelledby="csv-tab">
+            <form id="csv-form" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label for="csvFile" class="form-label">Выберите CSV файл</label>
+                    <input type="file" class="form-control" id="csvFile" name="file" accept=".csv,.xlsx,.json">
+                </div>
+                <button type="submit" class="btn btn-primary">Загрузить</button>
+            </form>
+        </div>
+        <div class="tab-pane fade" id="postgresql" role="tabpanel" aria-labelledby="postgresql-tab">
+            <form id="postgresql-form">
+                <div class="mb-3">
+                    <label for="pgHost" class="form-label">Хост</label>
+                    <input type="text" class="form-control" id="pgHost" name="host" required>
+                </div>
+                <div class="mb-3">
+                    <label for="pgPort" class="form-label">Порт</label>
+                    <input type="number" class="form-control" id="pgPort" name="port" required>
+                </div>
+                <div class="mb-3">
+                    <label for="pgUser" class="form-label">Пользователь</label>
+                    <input type="text" class="form-control" id="pgUser" name="user" required>
+                </div>
+                <div class="mb-3">
+                    <label for="pgPassword" class="form-label">Пароль</label>
+                    <input type="password" class="form-control" id="pgPassword" name="password" required>
+                </div>
+                <div class="mb-3">
+                    <label for="pgDatabase" class="form-label">База данных</label>
+                    <input type="text" class="form-control" id="pgDatabase" name="database" required>
+                </div>
+                <div class="mb-3">
+                    <label for="pgQuery" class="form-label">SQL запрос</label>
+                    <textarea class="form-control" id="pgQuery" name="query" rows="3" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Подключиться</button>
+            </form>
+        </div>
+        <div class="tab-pane fade" id="mysql" role="tabpanel" aria-labelledby="mysql-tab">
+            <form id="mysql-form">
+                <div class="mb-3">
+                    <label for="mysqlHost" class="form-label">Хост</label>
+                    <input type="text" class="form-control" id="mysqlHost" name="host" required>
+                </div>
+                <div class="mb-3">
+                    <label for="mysqlUser" class="form-label">Пользователь</label>
+                    <input type="text" class="form-control" id="mysqlUser" name="user" required>
+                </div>
+                <div class="mb-3">
+                    <label for="mysqlPassword" class="form-label">Пароль</label>
+                    <input type="password" class="form-control" id="mysqlPassword" name="password" required>
+                </div>
+                <div class="mb-3">
+                    <label for="mysqlDatabase" class="form-label">База данных</label>
+                    <input type="text" class="form-control" id="mysqlDatabase" name="database" required>
+                </div>
+                <div class="mb-3">
+                    <label for="mysqlQuery" class="form-label">SQL запрос</label>
+                    <textarea class="form-control" id="mysqlQuery" name="query" rows="3" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Подключиться</button>
+            </form>
+        </div>
+        <div class="tab-pane fade" id="mongodb" role="tabpanel" aria-labelledby="mongodb-tab">
+            <form id="mongodb-form">
+                <div class="mb-3">
+                    <label for="mongoHost" class="form-label">Хост</label>
+                    <input type="text" class="form-control" id="mongoHost" name="host" required>
+                </div>
+                <div class="mb-3">
+                    <label for="mongoPort" class="form-label">Порт</label>
+                    <input type="number" class="form-control" id="mongoPort" name="port" required>
+                </div>
+                <div class="mb-3">
+                    <label for="mongoUsername" class="form-label">Пользователь</label>
+                    <input type="text" class="form-control" id="mongoUsername" name="username">
+                </div>
+                <div class="mb-3">
+                    <label for="mongoPassword" class="form-label">Пароль</label>
+                    <input type="password" class="form-control" id="mongoPassword" name="password">
+                </div>
+                <div class="mb-3">
+                    <label for="mongoDatabase" class="form-label">База данных</label>
+                    <input type="text" class="form-control" id="mongoDatabase" name="database" required>
+                </div>
+                <div class="mb-3">
+                    <label for="mongoCollection" class="form-label">Коллекция</label>
+                    <input type="text" class="form-control" id="mongoCollection" name="collection" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Подключиться</button>
+            </form>
+        </div>
+        <div class="tab-pane fade" id="cassandra" role="tabpanel" aria-labelledby="cassandra-tab">
+            <form id="cassandra-form">
+                <div class="mb-3">
+                    <label for="cassandraHost" class="form-label">Хост</label>
+                    <input type="text" class="form-control" id="cassandraHost" name="host" required>
+                </div>
+                <div class="mb-3">
+                    <label for="cassandraPort" class="form-label">Порт</label>
+                    <input type="number" class="form-control" id="cassandraPort" name="port" required>
+                </div>
+                <div class="mb-3">
+                    <label for="cassandraUsername" class="form-label">Пользователь</label>
+                    <input type="text" class="form-control" id="cassandraUsername" name="username">
+                </div>
+                <div class="mb-3">
+                    <label for="cassandraPassword" class="form-label">Пароль</label>
+                    <input type="password" class="form-control" id="cassandraPassword" name="password">
+                </div>
+                <div class="mb-3">
+                    <label for="cassandraKeyspace" class="form-label">Keyspace</label>
+                    <input type="text" class="form-control" id="cassandraKeyspace" name="keyspace" required>
+                </div>
+                <div class="mb-3">
+                    <label for="cassandraQuery" class="form-label">CQL запрос</label>
+                    <textarea class="form-control" id="cassandraQuery" name="query" rows="3" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Подключиться</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="data-preview" class="mt-4"></div>
+</div>
+
+<script>
+document.getElementById('csv-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+
+    try {
+        const response = await fetch('/upload', {
+            method: 'POST',
+            body: formData
+        });
+
+        const contentType = response.headers.get('content-type');
+        
+        if (contentType && contentType.includes('application/json')) {
+            const data = await response.json();
+            if (response.ok) {
+                document.getElementById('data-preview').innerHTML = data.table_html;
+            } else {
+                document.getElementById('data-preview').innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+            }
+        } else {
+            const htmlContent = await response.text();
+            document.getElementById('data-preview').innerHTML = htmlContent;
+        }
+    } catch (error) {
+        document.getElementById('data-preview').innerHTML = `<div class="alert alert-danger">Ошибка при загрузке файла: ${error.message}</div>`;
+    }
+});
+
+document.getElementById('postgresql-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+
+    try {
+        const response = await fetch('/connect/postgresql', {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            document.getElementById('data-preview').innerHTML = data.table_html;
+        } else {
+            document.getElementById('data-preview').innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+        }
+    } catch (error) {
+        document.getElementById('data-preview').innerHTML = `<div class="alert alert-danger">Error: ${error.message}</div>`;
+    }
+});
+
+document.getElementById('mysql-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+
+    try {
+        const response = await fetch('/connect/mysql', {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            document.getElementById('data-preview').innerHTML = data.table_html;
+        } else {
+            document.getElementById('data-preview').innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+        }
+    } catch (error) {
+        document.getElementById('data-preview').innerHTML = `<div class="alert alert-danger">Error: ${error.message}</div>`;
+    }
+});
+
+document.getElementById('mongodb-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+
+    try {
+        const response = await fetch('/connect/mongodb', {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            document.getElementById('data-preview').innerHTML = data.table_html;
+        } else {
+            document.getElementById('data-preview').innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+        }
+    } catch (error) {
+        document.getElementById('data-preview').innerHTML = `<div class="alert alert-danger">Error: ${error.message}</div>`;
+    }
+});
+
+document.getElementById('cassandra-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+
+    try {
+        const response = await fetch('/connect/cassandra', {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            document.getElementById('data-preview').innerHTML = data.table_html;
+        } else {
+            document.getElementById('data-preview').innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+        }
+    } catch (error) {
+        document.getElementById('data-preview').innerHTML = `<div class="alert alert-danger">Error: ${error.message}</div>`;
+    }
+});
+</script>
+{% endblock %} 
+

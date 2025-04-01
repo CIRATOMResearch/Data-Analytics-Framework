@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Заполнение пропущенных значений</h2>
+    
+    {% if error %}
+    <div class="alert alert-warning">{{ error }}</div>
+    {% endif %}
+
+    {% if success_message %}
+    <div class="alert alert-success">
+        {{ success_message }}
+    </div>
+    {% endif %}
+    
+    {% if not error %}
+    <!-- Анализ пропущенных значений -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Анализ пропущенных значений</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Колонка</th>
+                            <th>Кол-во пропусков</th>
+                            <th>Процент пропусков</th>
+                            <th>Рекомендуемый метод</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for column, stats in missing_analysis.items() %}
+                        <tr>
+                            <td>{{ column }}</td>
+                            <td>{{ stats.count }}</td>
+                            <td>{{ "%.2f"|format(stats.percentage) }}%</td>
+                            <td>{{ stats.recommended_method }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ручное заполнение -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Ручное заполнение</h5>
+        </div>
+        <div class="card-body">
+            <form method="post" action="/stats/missing_values">
+                <div class="mb-3">
+                    <label for="column" class="form-label">Колонка</label>
+                    <select class="form-select" name="column" id="column">
+                        {% for column in columns %}
+                        <option value="{{ column }}">{{ column }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="method" class="form-label">Метод заполнения</label>
+                    <select class="form-select" name="method" id="method">
+                        <option value="mean">Среднее значение</option>
+                        <option value="median">Медиана</option>
+                        <option value="mode">Мода</option>
+                        <option value="knn">K-ближайших соседей</option>
+                        <option value="iterative">Итеративный метод</option>
+                        <option value="linear">Линейная регрессия</option>
+                        <option value="constant">Константа</option>
+                    </select>
+                </div>
+                <div class="mb-3" id="constantValue" style="display: none;">
+                    <label for="value" class="form-label">Значение</label>
+                    <input type="text" class="form-control" name="value" id="value">
+                </div>
+                <button type="submit" class="btn btn-primary">Заполнить</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Автоматическое заполнение -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Автоматическое заполнение</h5>
+        </div>
+        <div class="card-body">
+            <form method="post" action="/stats/auto_fill_missing">
+                <p class="text-muted">
+                    Автоматически выберет оптимальный метод заполнения для каждой колонки
+                    на основе анализа данных.
+                </p>
+                <button type="submit" class="btn btn-success">
+                    Выполнить автозаполнение
+                </button>
+            </form>
+        </div>
+    </div>
+
+    {% if table_html %}
+    <!-- Результирующая таблица -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Результат заполнения</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                {{ table_html | safe }}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% endif %}
+</div>
+
+<script>
+document.getElementById('method').addEventListener('change', function() {
+    const constantValue = document.getElementById('constantValue');
+    constantValue.style.display = this.value === 'constant' ? 'block' : 'none';
+});
+</script>
+{% endblock %}

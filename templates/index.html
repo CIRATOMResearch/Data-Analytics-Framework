@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Data Processing App</title>
+    <link href="{{ url_for('static', path='/styles.css') }}" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo-details">
+            <i class="fas fa-database"></i>
+            <span class="logo_name">Data Tools</span>
+        </div>
+        <ul class="nav-links">
+            <li>
+                <a href="/preview" class="{% if request.url.path == '/preview' %}active{% endif %}">
+                    <i class="fas fa-table"></i>
+                    <span class="link_name">Preview</span>
+                </a>
+            </li>
+            <li>
+                <a href="/clean" class="{% if request.url.path == '/clean' %}active{% endif %}">
+                    <i class="fas fa-broom"></i>
+                    <span class="link_name">Clean</span>
+                </a>
+            </li>
+            <li>
+                <a href="/convert-dates" class="{% if request.url.path == '/convert-dates' %}active{% endif %}">
+                    <i class="fas fa-calendar"></i>
+                    <span class="link_name">Convert</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <section class="home-section">
+        <div class="home-content">
+            <h1>Upload Your Dataset</h1>
+            {% if error %}
+            <div class="error-message">{{ error }}</div>
+            {% endif %}
+            <form id="upload-form" enctype="multipart/form-data">
+                <input type="file" id="file-input" accept=".csv,.xlsx,.json">
+                <button type="submit">Upload</button>
+            </form>
+            <div id="status"></div>
+        </div>
+    </section>
+
+    <script src="{{ url_for('static', path='/script.js') }}"></script>
+</body>
+</html>

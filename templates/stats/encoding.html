@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Кодирование категориальных данных</h2>
+    
+    {% if error %}
+        <div class="alert alert-warning">{{ error }}</div>
+    {% else %}
+        <div class="card">
+            <div class="card-body">
+                <form method="post" action="/stats/encoding" id="encoding-form">
+                    <div class="mb-4">
+                        <label for="encoding-type" class="form-label">Тип кодирования</label>
+                        <select class="form-select form-select-lg mb-3" id="encoding-type" name="encoding-type">
+                            <option value="auto">Автоматическое кодирование</option>
+                            <option value="manual">Ручное кодирование</option>
+                        </select>
+                    </div>
+
+                    <div id="manual-options" style="display: none;">
+                        <div class="mb-4">
+                            <label for="method" class="form-label">Метод кодирования</label>
+                            <select class="form-select form-select-lg mb-3" id="method" name="method">
+                                <option value="label">Label Encoding - Числовые метки</option>
+                                <option value="onehot">One-Hot Encoding - Бинарные признаки</option>
+                                <option value="binary">Binary Encoding - Бинарное представление</option>
+                                <option value="ordinal">Ordinal Encoding - Порядковое кодирование</option>
+                                <option value="target">Target Encoding - Целевое кодирование</option>
+                                <option value="helmert">Helmert Encoding - Контрастное кодирование</option>
+                                <option value="catboost">CatBoost Encoding - Продвинутое кодирование</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="columns" class="form-label">Выберите столбцы для кодирования</label>
+                            <select multiple class="form-select form-select-lg" id="columns" name="columns" size="5">
+                                {% for column in categorical_columns %}
+                                    <option value="{{ column }}">{{ column }}</option>
+                                {% endfor %}
+                            </select>
+                            <small class="form-text text-muted">Используйте Ctrl для выбора нескольких столбцов</small>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-code"></i> Применить кодирование
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {% if success_message %}
+            <div class="alert alert-success mt-4">
+                {{ success_message }}
+            </div>
+        {% endif %}
+    {% endif %}
+</div>
+
+<style>
+.form-select-lg {
+    font-size: 1rem;
+    padding: 0.8rem 1rem;
+    border-radius: 0.5rem;
+}
+
+.btn-lg {
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+    border-radius: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background: linear-gradient(45deg, #4e73df, #224abe);
+    border: none;
+    box-shadow: 0 4px 15px rgba(78, 115, 223, 0.2);
+}
+
+.btn-primary:hover {
+    background: linear-gradient(45deg, #224abe, #1a3a97);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(78, 115, 223, 0.3);
+}
+
+.card {
+    border: none;
+    border-radius: 1rem;
+    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1);
+}
+
+.form-label {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+}
+
+.form-select {
+    border: 2px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+
+.form-select:focus {
+    border-color: #4e73df;
+    box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+}
+
+.form-text {
+    color: #6c757d;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}
+</style>
+
+<script>
+document.getElementById('encoding-type').addEventListener('change', function() {
+    const manualOptions = document.getElementById('manual-options');
+    const methodSelect = document.getElementById('method');
+    const columnsSelect = document.getElementById('columns');
+    
+    if (this.value === 'manual') {
+        manualOptions.style.display = 'block';
+        methodSelect.required = true;
+        columnsSelect.required = true;
+    } else {
+        manualOptions.style.display = 'none';
+        methodSelect.required = false;
+        columnsSelect.required = false;
+    }
+});
+
+document.getElementById('encoding-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const encodingType = formData.get('encoding-type');
+    
+    if (encodingType === 'auto') {
+        formData.set('method', 'auto');
+    }
+    
+    fetch('/stats/encoding', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            window.location.reload();
+        } else if (data.error) {
+            alert('Ошибка при кодировании: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Ошибка при кодировании');
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,314 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <h2 class="mb-4">Поиск и обработка выбросов</h2>
+    
+    {% if error %}
+    <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Параметры обработки</h5>
+                    <form id="emissions-form" method="post">
+                        <div class="mb-3">
+                            <label class="form-label">Метод обработки</label>
+                            <select class="form-select" name="processing_method" id="processing_method">
+                                <option value="auto">Автоматический</option>
+                                <option value="manual">Ручной</option>
+                            </select>
+                        </div>
+
+                        <div id="manual-options" style="display: none;">
+                            <div class="mb-3">
+                                <label class="form-label">Выберите столбец</label>
+                                <select class="form-select" name="column" id="column">
+                                    {% for column in columns %}
+                                    <option value="{{ column }}">{{ column }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Метод обработки выбросов</label>
+                                <select class="form-select" name="method" id="method">
+                                    <option value="iqr">IQR метод</option>
+                                    <option value="zscore">Z-score метод</option>
+                                    <option value="isolation_forest">Isolation Forest</option>
+                                    <option value="dbscan">DBSCAN</option>
+                                    <option value="lof">Local Outlier Factor</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Способ обработки</label>
+                                <select class="form-select" name="handling_method" id="handling_method">
+                                    <option value="remove">Удалить выбросы</option>
+                                    <option value="cap">Заменить на границы</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100" style="background-color: #10a37f; border: none;">
+                            Обработать
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card mt-4 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Статистика выбросов</h5>
+                    <div id="outliers-stats">
+                        <!-- Здесь будет статистика -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-9">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card shadow-sm">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">До обработки</h5>
+                        </div>
+                        <div class="card-body">
+                            <img id="before-plot" class="img-fluid" />
+                            <div id="before-stats" class="mt-3">
+                                <!-- Статистики до обработки -->
+                            </div>
+                            <div id="outliers-before" class="mt-3">
+                                <!-- Выбросы до обработки -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card shadow-sm">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">После обработки</h5>
+                        </div>
+                        <div class="card-body">
+                            <img id="after-plot" class="img-fluid" />
+                            <div id="after-stats" class="mt-3">
+                                <!-- Статистики после обработки -->
+                            </div>
+                            <div id="outliers-after" class="mt-3">
+                                <!-- Выбросы после обработки -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-4 shadow-sm">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Сравнительный анализ</h5>
+                </div>
+                <div class="card-body">
+                    <div id="comparison-stats">
+                        <!-- Сравнительная статистика -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('processing_method').addEventListener('change', function() {
+    const manualOptions = document.getElementById('manual-options');
+    manualOptions.style.display = this.value === 'manual' ? 'block' : 'none';
+});
+
+document.getElementById('emissions-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    try {
+        const response = await fetch('/stats/emissions', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.error) {
+            // Показываем ошибку
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'alert alert-danger mt-3';
+            errorDiv.textContent = data.error;
+            this.appendChild(errorDiv);
+            
+            // Удаляем сообщение об ошибке через 5 секунд
+            setTimeout(() => errorDiv.remove(), 5000);
+            return;
+        }
+        
+        // Обновляем визуализации
+        if (data.before_data) {
+            document.getElementById('before-plot').src = `data:image/png;base64,${data.before_data.plot}`;
+            if (data.before_data.statistics) {
+                updateStats('before-stats', data.before_data.statistics);
+            }
+        }
+        
+        if (data.after_data) {
+            document.getElementById('after-plot').src = `data:image/png;base64,${data.after_data.plot}`;
+            if (data.after_data.statistics) {
+                updateStats('after-stats', data.after_data.statistics);
+            }
+        }
+        
+        // Показываем сообщение об успехе
+        const successDiv = document.createElement('div');
+        successDiv.className = 'alert alert-success mt-3';
+        successDiv.textContent = data.message || 'Выбросы успешно обработаны';
+        this.appendChild(successDiv);
+        
+        // Удаляем сообщение об успехе через 5 секунд
+        setTimeout(() => successDiv.remove(), 5000);
+        
+    } catch (error) {
+        console.error('Error:', error);
+        // Показываем ошибку
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'alert alert-danger mt-3';
+        errorDiv.textContent = 'Произошла ошибка при обработке выбросов';
+        this.appendChild(errorDiv);
+        
+        // Удаляем сообщение об ошибке через 5 секунд
+        setTimeout(() => errorDiv.remove(), 5000);
+    }
+});
+
+function updateStats(elementId, stats) {
+    const element = document.getElementById(elementId);
+    if (!element || !stats || !stats.basic_stats) return;
+    
+    element.innerHTML = `
+        <div class="table-responsive">
+            <table class="table table-sm">
+                <tr>
+                    <td>Среднее:</td>
+                    <td>${stats.basic_stats.mean.toFixed(4)}</td>
+                </tr>
+                <tr>
+                    <td>Медиана:</td>
+                    <td>${stats.basic_stats.median.toFixed(4)}</td>
+                </tr>
+                <tr>
+                    <td>Стд. отклонение:</td>
+                    <td>${stats.basic_stats.std.toFixed(4)}</td>
+                </tr>
+                <tr>
+                    <td>Асимметрия:</td>
+                    <td>${stats.basic_stats.skew.toFixed(4)}</td>
+                </tr>
+                <tr>
+                    <td>Эксцесс:</td>
+                    <td>${stats.basic_stats.kurtosis.toFixed(4)}</td>
+                </tr>
+            </table>
+        </div>
+    `;
+    
+    if (stats.outliers_stats) {
+        const outliersElement = document.getElementById('outliers-stats');
+        if (outliersElement) {
+            outliersElement.innerHTML = `
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <tr>
+                            <td>Количество выбросов:</td>
+                            <td>${stats.outliers_stats.count}</td>
+                        </tr>
+                        <tr>
+                            <td>Процент выбросов:</td>
+                            <td>${stats.outliers_stats.percentage.toFixed(2)}%</td>
+                        </tr>
+                        <tr>
+                            <td>Нижняя граница:</td>
+                            <td>${stats.outliers_stats.boundaries.lower.toFixed(4)}</td>
+                        </tr>
+                        <tr>
+                            <td>Верхняя граница:</td>
+                            <td>${stats.outliers_stats.boundaries.upper.toFixed(4)}</td>
+                        </tr>
+                    </table>
+                </div>
+            `;
+        }
+    }
+}
+
+function updateComparisonStats(beforeStats, afterStats) {
+    if (!beforeStats || !afterStats) return;
+    
+    const element = document.getElementById('comparison-stats');
+    const meanDiff = ((afterStats.basic_stats.mean - beforeStats.basic_stats.mean) / beforeStats.basic_stats.mean * 100).toFixed(2);
+    const stdDiff = ((afterStats.basic_stats.std - beforeStats.basic_stats.std) / beforeStats.basic_stats.std * 100).toFixed(2);
+    
+    element.innerHTML = `
+        <div class="table-responsive">
+            <table class="table table-sm">
+                <tr>
+                    <td>Изменение среднего:</td>
+                    <td>${meanDiff}%</td>
+                </tr>
+                <tr>
+                    <td>Изменение std:</td>
+                    <td>${stdDiff}%</td>
+                </tr>
+                <tr>
+                    <td>Нормальность до:</td>
+                    <td>${beforeStats.distribution_test.is_normal ? 'Да' : 'Нет'}</td>
+                </tr>
+                <tr>
+                    <td>Нормальность после:</td>
+                    <td>${afterStats.distribution_test.is_normal ? 'Да' : 'Нет'}</td>
+                </tr>
+            </table>
+        </div>
+    `;
+}
+
+function updateOutliersList(elementId, outliers) {
+    const element = document.getElementById(elementId);
+    if (outliers.length === 0) {
+        element.innerHTML = '<p>Нет выбросов</p>';
+        return;
+    }
+    
+    let outliersHtml = '<ul>';
+    outliers.forEach(outlier => {
+        outliersHtml += `<li>${JSON.stringify(outlier)}</li>`;
+    });
+    outliersHtml += '</ul>';
+    
+    element.innerHTML = outliersHtml;
+}
+</script>
+
+<style>
+.card {
+    border: none;
+    margin-bottom: 1rem;
+}
+.card-header {
+    background-color: #f8f9fa;
+    border-bottom: none;
+}
+.table td {
+    padding: 0.5rem;
+}
+.btn-primary:hover {
+    background-color: #0d8a6f !important;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Асимметрия и эксцесс</h2>
+    
+    {% if error %}
+    <div class="alert alert-warning">{{ error }}</div>
+    {% else %}
+    <div class="row">
+        {% for column in columns %}
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">{{ column }}</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <tbody>
+                            {% for metric, value in distribution_metrics[column].items() %}
+                            <tr>
+                                <td>{{ metric }}</td>
+                                <td>
+                                    {% if metric == 'is_normal' %}
+                                        {{ 'Да' if value else 'Нет' }}
+                                    {% else %}
+                                        {{ "%.4f"|format(value) }}
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %} 

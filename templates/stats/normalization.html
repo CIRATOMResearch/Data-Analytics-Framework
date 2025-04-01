@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Нормализация и стандартизация</h2>
+    
+    {% if error %}
+    <div class="alert alert-warning">{{ error }}</div>
+    {% elif success_message %}
+    <div class="alert alert-success">{{ success_message }}</div>
+    {% endif %}
+
+    {% if numeric_columns %}
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Автоматический выбор метода</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Колонка</th>
+                                <th>Рекомендуемый метод</th>
+                                <th>Распределение</th>
+                                <th>Выбросы (%)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for column in numeric_columns %}
+                            <tr>
+                                <td>{{ column }}</td>
+                                <td>{{ auto_methods[column] }}</td>
+                                <td>{{ normal_dist[column] }}</td>
+                                <td>{{ "%.2f"|format(outliers[column][3]) }}%</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <button id="auto-scale" class="btn btn-primary mt-3">Автоматическое применение масштабирования</button>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Ручной выбор метода</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="/stats/normalize">
+                        <div class="mb-3">
+                            <label for="columns" class="form-label">Выберите колонки для нормализации</label>
+                            <select class="form-select" name="columns" id="columns" multiple required>
+                                {% for column in numeric_columns %}
+                                <option value="{{ column }}">{{ column }}</option>
+                                {% endfor %}
+                            </select>
+                            <small class="form-text text-muted">Удерживайте Ctrl для выбора нескольких колонок</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="method" class="form-label">Выберите метод масштабирования</label>
+                            <select class="form-select" name="method" id="method" required>
+                                <option value="minmax">Min-Max нормализация (0-1)</option>
+                                <option value="zscore">Z-score стандартизация (μ=0, σ=1)</option>
+                                <option value="robust">Robust scaling (устойчив к выбросам)</option>
+                                <option value="maxabs">Max Abs scaling (-1 до 1)</option>
+                                <option value="auto">Автоматический выбор</option>
+                            </select>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">Применить масштабирование</button>
+                    </form>
+                </div>
+            </div>            
+        </div>
+    </div>
+    {% endif %}
+
+    {% if stats_before and stats_after %}
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Результаты нормализации</h5>
+        </div>
+        <div class="card-body">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Колонка</th>
+                        <th>Среднее (до)</th>
+                        <th>Среднее (после)</th>
+                        <th>Стд. откл. (до)</th>
+                        <th>Стд. откл. (после)</th>
+                        <th>Мин (до)</th>
+                        <th>Мин (после)</th>
+                        <th>Макс (до)</th>
+                        <th>Макс (после)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for column in stats_before.keys() %}
+                    <tr>
+                        <td>{{ column }}</td>
+                        <td>{{ "%.2f"|format(stats_before[column]['mean']) }}</td>
+                        <td>{{ "%.2f"|format(stats_after[column]['mean']) }}</td>
+                        <td>{{ "%.2f"|format(stats_before[column]['std']) }}</td>
+                        <td>{{ "%.2f"|format(stats_after[column]['std']) }}</td>
+                        <td>{{ "%.2f"|format(stats_before[column]['min']) }}</td>
+                        <td>{{ "%.2f"|format(stats_after[column]['min']) }}</td>
+                        <td>{{ "%.2f"|format(stats_before[column]['max']) }}</td>
+                        <td>{{ "%.2f"|format(stats_after[column]['max']) }}</td>
+                        <td>{{ "%.2f"|format(outliers.get(column, [0,0,0,0])[3]) if outliers.get(column) else "0.00" }}%</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+document.getElementById('auto-scale').addEventListener('click', function() {
+    const formData = new FormData();
+    formData.append('method', 'auto');
+    
+    fetch('/stats/normalize', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            window.location.reload();
+        } else if (data.error) {
+            alert('Ошибка при автоматическом масштабировании: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Ошибка при автоматическом масштабировании');
+    });
+});
+</script>
+{% endblock %}

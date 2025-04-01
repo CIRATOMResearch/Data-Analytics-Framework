@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Data Preview</title>
+    <link href="{{ url_for('static', path='/styles.css') }}" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="wrapper">
+        <!-- Кнопка переключения сайдбара -->
+        <button class="sidebar-toggle">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <!-- Сайдбар -->
+        <nav id="sidebar">
+            <div class="sidebar-header">
+                <h3>Data Tools</h3>
+            </div>
+
+            <ul class="list-unstyled components">
+                <li class="active">
+                    <a href="/preview">
+                        <i class="fas fa-table"></i>
+                        Preview Data
+                    </a>
+                </li>
+                <li>
+                    <a href="/clean">
+                        <i class="fas fa-broom"></i>
+                        Clean Data
+                    </a>
+                </li>
+                <li>
+                    <a href="/convert-dates">
+                        <i class="fas fa-calendar"></i>
+                        Convert Dates
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Основной контент -->
+        <div id="content">
+            <h1>Data Preview</h1>
+            <div class="data-info">
+                <p>Shape: {{ shape[0] }} rows × {{ shape[1] }} columns</p>
+                <p>Columns: {{ columns }}</p>
+            </div>
+            
+            <div class="table-wrapper">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            {% for col in columns %}
+                            <th>{{ col }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in head %}
+                        <tr>
+                            {% for col in columns %}
+                            <td>{{ row[col] }}</td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', path='/script.js') }}"></script>
+</body>
+</html>

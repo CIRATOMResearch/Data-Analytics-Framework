@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-5">
+        <div class="col-12 text-center">
+            <h1 class="display-4 mb-3">Добро пожаловать в ATOM Analytics</h1>
+            <p class="lead text-muted">Мощный инструмент для анализа и обработки данных</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-database text-primary"></i>
+                        Загрузка данных
+                    </h5>
+                    <p class="card-text">
+                        Поддержка различных источников данных: CSV, Excel, JSON, а также прямое подключение к базам данных MySQL, PostgreSQL, MongoDB и Cassandra.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-chart-line text-success"></i>
+                        Анализ данных
+                    </h5>
+                    <p class="card-text">
+                        Полный набор инструментов для статистического анализа: описательная статистика, корреляционный анализ, регрессионный анализ и многое другое.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-magic text-warning"></i>
+                        Предобработка
+                    </h5>
+                    <p class="card-text">
+                        Автоматическая обработка пропущенных значений, выбросов, нормализация данных и кодирование категориальных переменных.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-md-6">
+            <h3>Начало работы</h3>
+            <ol class="list-group list-group-numbered mb-4">
+                <li class="list-group-item">Загрузите данные через раздел "Источники данных"</li>
+                <li class="list-group-item">Проведите предварительный анализ с помощью "Описательной статистики"</li>
+                <li class="list-group-item">Обработайте данные используя инструменты предобработки</li>
+                <li class="list-group-item">Исследуйте результаты с помощью визуализаций</li>
+            </ol>
+        </div>
+        
+        <div class="col-md-6">
+            <h3>Возможности</h3>
+            <div class="list-group">
+                <a href="/data-sources" class="list-group-item list-group-item-action">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">Подключение к базам данных</h5>
+                    </div>
+                    <p class="mb-1">MySQL, PostgreSQL, MongoDB, Cassandra</p>
+                </a>
+                <a href="/stats/analysis" class="list-group-item list-group-item-action">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">Статистический анализ</h5>
+                    </div>
+                    <p class="mb-1">Факторный, кластерный, регрессионный анализ</p>
+                </a>
+                <a href="/stats/distribution" class="list-group-item list-group-item-action">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">Визуализация</h5>
+                    </div>
+                    <p class="mb-1">Графики распределений, корреляций и многое другое</p>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Добавляем Font Awesome для иконок -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+<style>
+.card {
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.text-primary {
+    color: #10a37f !important;
+}
+
+.text-success {
+    color: #10a37f !important;
+}
+
+.text-warning {
+    color: #10a37f !important;
+}
+
+.list-group-item:hover {
+    background-color: #f8f9fa;
+}
+
+.display-4 {
+    color: #10a37f;
+}
+
+.list-group-item-action:hover {
+    background-color: #e9ecef;
+}
+
+.shadow-sm {
+    box-shadow: 0 .125rem .25rem rgba(0,0,0,.075)!important;
+}
+</style>
+{% endblock %}

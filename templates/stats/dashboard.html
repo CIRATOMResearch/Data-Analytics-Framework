@@ -1,0 +1,363 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <h2 class="mb-4">Аналитический дашборд</h2>
+    
+    {% if error %}
+    <div class="alert alert-warning">{{ error }}</div>
+    {% else %}
+    
+    <!-- Карточки с метриками качества данных -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Общее количество записей</h5>
+                    <h2 class="card-text">{{ data_quality.total_rows }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Пропущенные значения</h5>
+                    <h2 class="card-text">{{ "%.2f"|format(data_quality.missing_percentage) }}%</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Числовые столбцы</h5>
+                    <h2 class="card-text">{{ data_quality.numeric_columns }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Категориальные столбцы</h5>
+                    <h2 class="card-text">{{ data_quality.categorical_columns }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Фильтры -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <label for="column-select" class="form-label">Выберите столбец</label>
+                    <select id="column-select" class="form-select">
+                        <option value="">Все столбцы</option>
+                        {% for column in columns %}
+                        <option value="{{ column }}">{{ column }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="chart-type" class="form-label">Тип графика</label>
+                    <select id="chart-type" class="form-select">
+                        <option value="distribution">Распределение</option>
+                        <option value="boxplot">Box Plot</option>
+                        <option value="correlation">Корреляция</option>
+                        <option value="missing">Пропущенные значения</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button id="apply-filters" class="btn btn-primary mt-4">Применить фильтры</button>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Экспорт данных</label>
+                    <div class="btn-group d-flex">
+                        <button class="btn btn-success" onclick="exportData('csv')">CSV</button>
+                        <button class="btn btn-success" onclick="exportData('excel')">Excel</button>
+                        <button class="btn btn-success" onclick="exportData('json')">JSON</button>
+                        <button class="btn btn-success" onclick="exportData('pdf')">PDF</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Анализ пропущенных значений -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Анализ пропущенных значений</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    {{ missing_heatmap|safe }}
+                </div>
+                <div class="col-md-6">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Столбец</th>
+                                <th>Количество пропусков</th>
+                                <th>Процент пропусков</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for column, data in missing_data.items() %}
+                            <tr>
+                                <td>{{ column }}</td>
+                                <td>{{ data['Количество пропусков'] }}</td>
+                                <td>{{ "%.2f"|format(data['Процент пропусков']) }}%</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Анализ выбросов -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Анализ выбросов</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Столбец</th>
+                                <th>Количество выбросов</th>
+                                <th>Процент выбросов</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for column, data in outliers_data.items() %}
+                            <tr>
+                                <td>{{ column }}</td>
+                                <td>{{ data.count }}</td>
+                                <td>{{ "%.2f"|format(data.percentage) }}%</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col-md-8">
+                    <div id="box-plots-carousel" class="carousel slide" data-bs-ride="carousel">
+                        <div class="carousel-inner">
+                            {% for plot in box_plots %}
+                            <div class="carousel-item {% if loop.first %}active{% endif %}">
+                                {{ plot|safe }}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <button class="carousel-control-prev" type="button" data-bs-target="#box-plots-carousel" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Previous</span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#box-plots-carousel" data-bs-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Next</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Корреляционная матрица -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Корреляционная матрица</h5>
+        </div>
+        <div class="card-body">
+            {{ heatmap|safe }}
+        </div>
+    </div>
+
+    <!-- Распределения -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Распределения числовых переменных</h5>
+        </div>
+        <div class="card-body">
+            <div id="dist-plots-carousel" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                    {% for plot in dist_plots %}
+                    <div class="carousel-item {% if loop.first %}active{% endif %}">
+                        {{ plot|safe }}
+                    </div>
+                    {% endfor %}
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#dist-plots-carousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#dist-plots-carousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Матрица рассеяния -->
+    {% if scatter_matrix %}
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Матрица рассеяния</h5>
+        </div>
+        <div class="card-body">
+            {{ scatter_matrix|safe }}
+        </div>
+    </div>
+    {% endif %}
+    
+    {% endif %}
+</div>
+
+<style>
+.card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    transition: transform 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.bg-primary {
+    background: linear-gradient(45deg, #4e73df, #224abe) !important;
+}
+
+.bg-info {
+    background: linear-gradient(45deg, #36b9cc, #1a8eaa) !important;
+}
+
+.bg-success {
+    background: linear-gradient(45deg, #1cc88a, #13855c) !important;
+}
+
+.bg-warning {
+    background: linear-gradient(45deg, #f6c23e, #dda20a) !important;
+}
+
+.carousel-control-prev,
+.carousel-control-next {
+    width: 5%;
+    background-color: rgba(0,0,0,0.3);
+    border-radius: 50%;
+    height: 50px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.form-select {
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    padding: 0.75rem;
+    transition: all 0.3s ease;
+}
+
+.form-select:focus {
+    border-color: #4e73df;
+    box-shadow: 0 0 0 0.2rem rgba(78,115,223,0.25);
+}
+
+.btn-primary {
+    background: linear-gradient(45deg, #4e73df, #224abe);
+    border: none;
+    border-radius: 10px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.5rem 1rem rgba(78,115,223,0.3);
+}
+
+.table {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.table thead th {
+    background: linear-gradient(45deg, #4e73df, #224abe);
+    color: white;
+    font-weight: 600;
+    border: none;
+}
+
+.carousel {
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.btn-group {
+    gap: 5px;
+}
+
+.btn-success {
+    background: linear-gradient(45deg, #1cc88a, #13855c);
+    border: none;
+    border-radius: 10px;
+    padding: 0.5rem 1rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.5rem 1rem rgba(28,200,138,0.3);
+    background: linear-gradient(45deg, #13855c, #0d6b4a);
+}
+</style>
+
+<script>
+document.getElementById('apply-filters').addEventListener('click', function() {
+    const column = document.getElementById('column-select').value;
+    const chartType = document.getElementById('chart-type').value;
+    
+    // Показываем соответствующие графики
+    const elements = {
+        'distribution': document.querySelectorAll('.distribution-plot'),
+        'boxplot': document.querySelectorAll('.boxplot'),
+        'correlation': document.querySelectorAll('.correlation-plot'),
+        'missing': document.querySelectorAll('.missing-plot')
+    };
+    
+    // Скрываем все графики
+    Object.values(elements).forEach(els => {
+        els.forEach(el => el.style.display = 'none');
+    });
+    
+    // Показываем выбранные графики
+    if (elements[chartType]) {
+        elements[chartType].forEach(el => {
+            if (!column || el.dataset.column === column) {
+                el.style.display = 'block';
+            }
+        });
+    }
+});
+
+// Инициализация всех каруселей
+document.addEventListener('DOMContentLoaded', function() {
+    const carousels = document.querySelectorAll('.carousel');
+    carousels.forEach(carousel => {
+        new bootstrap.Carousel(carousel, {
+            interval: false
+        });
+    });
+});
+
+function exportData(format) {
+    window.location.href = `/export/${format}`;
+}
+</script> 
+{% endblock %} 

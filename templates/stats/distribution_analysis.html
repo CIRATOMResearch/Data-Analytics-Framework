@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Анализ плотности распределения</h2>
+    
+    {% if error %}
+    <div class="alert alert-warning">
+        {{ error }}
+    </div>
+    {% else %}
+    <div class="row">
+        {% for column in columns %}
+        <div class="col-12 mb-5">
+            <div class="card shadow">
+                <div class="card-header bg-light">
+                    <h4 class="card-title mb-0">{{ column }}</h4>
+                </div>
+                <div class="card-body">
+                    <!-- График -->
+                    <img src="data:image/png;base64,{{ plots[column].plot }}" 
+                         class="img-fluid mb-4" 
+                         alt="Distribution plot for {{ column }}">
+                    
+                    <!-- Вкладки с статистиками -->
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" data-bs-toggle="tab" href="#basic-{{ loop.index }}">
+                                Основные метрики
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-bs-toggle="tab" href="#percentiles-{{ loop.index }}">
+                                Процентили
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-bs-toggle="tab" href="#normality-{{ loop.index }}">
+                                Тесты на нормальность
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-bs-toggle="tab" href="#distribution-{{ loop.index }}">
+                                Метрики распределения
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content mt-3">
+                        <!-- Основные метрики -->
+                        <div id="basic-{{ loop.index }}" class="tab-pane active">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <tr>
+                                        <td>Среднее</td>
+                                        <td>{{ "%.4f"|format(plots[column].statistics.basic.mean) }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Медиана</td>
+                                        <td>{{ "%.4f"|format(plots[column].statistics.basic.median) }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Стандартное отклонение</td>
+                                        <td>{{ "%.4f"|format(plots[column].statistics.basic.std) }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Асимметрия</td>
+                                        <td>{{ "%.4f"|format(plots[column].statistics.basic.skew) }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Эксцесс</td>
+                                        <td>{{ "%.4f"|format(plots[column].statistics.basic.kurtosis) }}</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Процентили -->
+                        <div id="percentiles-{{ loop.index }}" class="tab-pane fade">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <tr>
+                                        <td>1-й процентиль</td>
+                                        <td>{{ "%.4f"|format(plots[column].statistics.percentiles.p1) }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>5-й процентиль</td>
+                                        <td>{{ "%.4f"|format(plots[column].statistics.percentiles.p5) }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>25-й процентиль</td>
+                                        <td>{{ "%.4f"|format(plots[column].statistics.percentiles.p25) }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>75-й процентиль</td>
+                                        <td>{{ "%.4f"|format(plots[column].statistics.percentiles.p75) }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>95-й процентиль</td>
+                                        <td>{{ "%.4f"|format(plots[column].statistics.percentiles.p95) }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>99-й процентиль</td>
+                                        <td>{{ "%.4f"|format(plots[column].statistics.percentiles.p99) }}</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Тесты на нормальность -->
+                        <div id="normality-{{ loop.index }}" class="tab-pane fade">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <tr>
+                                        <th>Тест</th>
+                                        <th>Статистика</th>
+                                        <th>P-значение</th>
+                                        <th>Вывод</th>
+                                    </tr>
+                                    <tr>
+                                        <td>Тест Шапиро-Уилка</td>
+                                        <td>{{ "%.4f"|format(plots[column].statistics.normality_tests.shapiro[0]) }}</td>
+                                        <td>{{ "%.4f"|format(plots[column].statistics.normality_tests.shapiro[1]) }}</td>
+                                        <td>
+                                            {% if plots[column].statistics.normality_tests.shapiro[1] > 0.05 %}
+                                                <span class="text-success">Нормальное распределение</span>
+                                            {% else %}
+                                                <span class="text-danger">Не нормальное распределение</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Тест Колмогорова-Смирнова</td>
+                                        <td>{{ "%.4f"|format(plots[column].statistics.normality_tests.kstest[0]) }}</td>
+                                        <td>{{ "%.4f"|format(plots[column].statistics.normality_tests.kstest[1]) }}</td>
+                                        <td>
+                                            {% if plots[column].statistics.normality_tests.kstest[1] > 0.05 %}
+                                                <span class="text-success">Нормальное распределение</span>
+                                            {% else %}
+                                                <span class="text-danger">Не нормальное распределение</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Метрики распределения -->
+                        <div id="distribution-{{ loop.index }}" class="tab-pane fade">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <tr>
+                                        <td>Межквартильный размах (IQR)</td>
+                                        <td>{{ "%.4f"|format(plots[column].statistics.distribution_metrics.iqr) }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Размах</td>
+                                        <td>{{ "%.4f"|format(plots[column].statistics.distribution_metrics.range) }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Дисперсия</td>
+                                        <td>{{ "%.4f"|format(plots[column].statistics.distribution_metrics.variance) }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Медианное абсолютное отклонение</td>
+                                        <td>{{ "%.4f"|format(plots[column].statistics.distribution_metrics.mad) }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Мода</td>
+                                        <td>{{ "%.4f"|format(plots[column].statistics.distribution_metrics.mode) }}</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.card {
+    border: none;
+    margin-bottom: 30px;
+}
+.card-header {
+    background-color: #f8f9fa;
+    border-bottom: none;
+}
+.nav-tabs .nav-link {
+    color: #495057;
+}
+.nav-tabs .nav-link.active {
+    color: #10a37f;
+    border-color: #10a37f;
+}
+.table td {
+    vertical-align: middle;
+}
+.tab-content {
+    padding: 20px;
+    background-color: #fff;
+    border: 1px solid #dee2e6;
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+}
+</style>
+{% endblock %}

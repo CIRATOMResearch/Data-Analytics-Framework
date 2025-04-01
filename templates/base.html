@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATOM</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="{{ url_for('static', path='/css/style.css') }}" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">C.I.R ATOM</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/home">Главная</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/data-sources">Источники данных</a>
+                    </li>               
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="statsDropdown" role="button" 
+                           data-bs-toggle="dropdown" aria-expanded="false">
+                            Описательная статистика
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="statsDropdown">
+                            <li><a class="dropdown-item" href="/stats/metrics">Основные метрики</a></li>
+                            <li><a class="dropdown-item" href="/stats/dispersion">Меры разброса</a></li>
+                            <li><a class="dropdown-item" href="/stats/quartiles">Квартили</a></li>
+                            <li><a class="dropdown-item" href="/stats/skewness">Асимметрия и эксцесс</a></li>
+                            <li><a class="dropdown-item" href="/stats/analysis">Анализ</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/stats/missing_values">Заполнение пропусков</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/stats/emissions">Выбросы</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/stats/normalization">Масштабирование</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/stats/encoding">Кодирование данных</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/stats/distribution">Анализ плотности распределения</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/stats/dashboard">Дашборд</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JavaScript -->
+    <script src="{{ url_for('static', path='/js/script.js') }}"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chart.js Box Plot -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-box-and-violin-plot@4.0.0/build/index.umd.min.js"></script>
+
+    <!-- Add this inside the body tag -->
+    <div class="modal fade" id="infoModal" tabindex="-1" aria-labelledby="infoModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="infoModalLabel">Информация</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Здесь будет отображаться дополнительная информация.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="alert alert-success alert-dismissible fade show" role="alert" id="success-alert" style="display: none;">
+        Операция выполнена успешно!
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert" id="error-alert" style="display: none;">
+        Произошла ошибка!
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+</body>
+</html>

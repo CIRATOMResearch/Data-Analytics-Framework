@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Анализ данных</h1>
+    
+    {% if error %}
+    <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+    
+    <ul class="nav nav-pills mb-4" id="analysisTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="factor-tab" data-bs-toggle="pill" data-bs-target="#factor" type="button" role="tab">
+                Факторный анализ
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="cluster-tab" data-bs-toggle="pill" data-bs-target="#cluster" type="button" role="tab">
+                Кластерный анализ
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="regression-tab" data-bs-toggle="pill" data-bs-target="#regression" type="button" role="tab">
+                Регрессионный анализ
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="correlation-tab" data-bs-toggle="pill" data-bs-target="#correlation" type="button" role="tab">
+                Корреляционный анализ
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content">
+        <!-- Факторный анализ -->
+        <div class="tab-pane fade show active" id="factor" role="tabpanel">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Факторный анализ</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            {% if visualizations.factor_plot %}
+                            <img src="data:image/png;base64,{{ visualizations.factor_plot }}" 
+                                 class="img-fluid" alt="Factor Analysis Plot">
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <h6>Объясненная дисперсия</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    {% if factor_analysis.explained_variance %}
+                                        {% for i in range(factor_analysis.explained_variance|length) %}
+                                        <tr>
+                                            <td>Фактор {{ i + 1 }}</td>
+                                            <td>{{ "%.4f"|format(factor_analysis.explained_variance[i]) }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    {% endif %}
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Кластерный анализ -->
+        <div class="tab-pane fade" id="cluster" role="tabpanel">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Кластерный анализ</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            {% if visualizations.cluster_plot %}
+                            <img src="data:image/png;base64,{{ visualizations.cluster_plot }}" 
+                                 class="img-fluid" alt="Cluster Analysis Plot">
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            {% if cluster_analysis.quality_metrics %}
+                            <h6>Метрики качества</h6>
+                            <ul class="list-group">
+                                <li class="list-group-item">
+                                    Silhouette score: {{ "%.4f"|format(cluster_analysis.quality_metrics.silhouette_score) }}
+                                </li>
+                                <li class="list-group-item">
+                                    Calinski-Harabasz score: {{ "%.4f"|format(cluster_analysis.quality_metrics.calinski_harabasz_score) }}
+                                </li>
+                            </ul>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Регрессионный анализ -->
+        <div class="tab-pane fade" id="regression" role="tabpanel">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Регрессионный анализ</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            {% if visualizations.regression_plot %}
+                            <img src="data:image/png;base64,{{ visualizations.regression_plot }}" 
+                                 class="img-fluid" alt="Regression Analysis Plot">
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            {% if regression_analysis.feature_importance %}
+                            <h6>Важность признаков</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    {% for feature, importance in regression_analysis.feature_importance.items() %}
+                                    <tr>
+                                        <td>{{ feature }}</td>
+                                        <td>{{ "%.4f"|format(importance) }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </table>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Корреляционный анализ -->
+        <div class="tab-pane fade" id="correlation" role="tabpanel">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Корреляционный анализ</h5>
+                </div>
+                <div class="card-body">
+                    {% if visualizations.correlation_plot %}
+                    <img src="data:image/png;base64,{{ visualizations.correlation_plot }}" 
+                         class="img-fluid" alt="Correlation Matrix Plot">
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.nav-pills .nav-link.active {
+    background-color: #10a37f;
+}
+.nav-pills .nav-link {
+    color: #10a37f;
+}
+.card {
+    border: none;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+.table td, .table th {
+    padding: 0.5rem;
+}
+.list-group-item {
+    padding: 0.5rem 1rem;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoads', function() {
+    var triggerTabList = [].slice.call(document.querySelectorAll('#analysisTabs button'));
+    triggerTabList.forEach(function(triggerEl) {
+        var tabTrigger = new bootstrap.Tab(triggerEl);
+        triggerEl.addEventListener('click', function(event) {
+            event.preventDefault();
+            tabTrigger.show();
+        });
+    });
+});
+</script>
+{% endblock %}
